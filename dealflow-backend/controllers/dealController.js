@@ -54,6 +54,51 @@ export const getDeals = async (req, res) => {
   }
 };
 
+export const updateDeal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedDeal = await Deal.findOneAndUpdate(
+      { _id: id, companyId: req.user.companyId },
+      req.body,
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedDeal) {
+      return res
+        .status(404)
+        .json({ message: "Deal not found in your workspace." });
+    }
+
+    res.status(200).json({
+      message: "Deal updated successfully",
+      deal: updatedDeal,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteDeal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deal = await Deal.findOne({ _id: id, companyId: req.user.companyId });
+
+    if (!deal) {
+      return res
+        .status(404)
+        .json({ message: "Deal not found in your workspace." });
+    }
+    await deal.deleteOne();
+    await DealMember.deleteMany({ dealId: id });
+
+    res.status(200).json({
+      message: "Deal and associated team assignments deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getDealById = async (req, res) => {
   try {
     const { id } = req.params;
