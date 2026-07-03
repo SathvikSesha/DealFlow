@@ -69,3 +69,28 @@ export const registerEmployee = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    res.status(200).json({
+      token: generateToken(user._id, user.companyId, user.role),
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+        companyId: user.companyId,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
