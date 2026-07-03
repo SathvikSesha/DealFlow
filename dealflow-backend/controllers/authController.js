@@ -73,14 +73,34 @@ export const registerEmployee = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+
+    // Validate request body
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide email and password" });
     }
+
+    const user = await User.findOne({
+      email,
+      isActive: true,
+    });
+
+    if (!user || user.inviteStatus === "PENDING") {
+      return res
+        .status(401)
+        .json({ message: "Invalid credentials or account pending activation" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "Account has been deactivated. Please contact your admin.",
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
+
     res.status(200).json({
       token: generateToken(user._id, user.companyId, user.role),
       user: {
@@ -91,6 +111,7 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error(`Login error: ${error.message}`);
     res.status(500).json({ message: error.message });
   }
 };
