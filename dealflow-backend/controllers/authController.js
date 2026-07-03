@@ -39,3 +39,33 @@ export const registerAdmin = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const registerEmployee = async (req, res) => {
+  try {
+    const { companyId, email, password } = req.body;
+    const user = await User.findOne({ email, companyId });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "Invalid invite details. Employee not found." });
+    }
+    if (user.inviteStatus === "ACTIVE") {
+      return res
+        .status(400)
+        .json({ message: "Account already activated. Please login." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    user.inviteStatus = "ACTIVE";
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Account activated successfully",
+      token: generateToken(user._id, user.companyId, user.role),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
