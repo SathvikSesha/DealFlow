@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema(
     },
     isActive: { type: Boolean, default: true },
     invitedAt: { type: Date, default: Date.now },
-  }
+  },
+  { timestamps: true }
 );
 
 const User = mongoose.model("User", userSchema);
