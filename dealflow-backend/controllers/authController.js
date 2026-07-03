@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import Company from "../models/Company.js";
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { generateToken } from "../services/AuthService.js";
 
@@ -11,11 +12,13 @@ export const registerAdmin = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
 
     const companyIdString = `${companyName.toUpperCase().replace(/\s+/g, "")}-${crypto.randomBytes(2).toString("hex").toUpperCase()}`;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
       name: adminName,
       email,
-      password: password,
+      password: hashedPassword,
       role: "ADMIN",
       companyId: companyIdString,
       inviteStatus: "ACTIVE",
