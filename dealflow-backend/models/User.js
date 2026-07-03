@@ -11,6 +11,19 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
     password: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ["ADMIN", "EXECUTIVE", "LEGAL", "FINANCE", "HR", "SECURITY"],
+      required: true,
+    },
+    companyId: { type: String, required: true },
+    inviteStatus: {
+      type: String,
+      enum: ["PENDING", "ACTIVE"],
+      default: "PENDING",
+    },
+    isActive: { type: Boolean, default: true },
+    invitedAt: { type: Date, default: Date.now },
   }
 );
 
