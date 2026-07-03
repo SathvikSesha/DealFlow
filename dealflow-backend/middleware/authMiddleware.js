@@ -34,3 +34,10 @@ export const authorizeRoles = (...roles) => {
     next();
   };
 };
+
+export const restrictToCompany = (req, res, next) => {
+  if (req.body.companyId && req.body.companyId !== req.user.companyId) {
+    return res.status(403).json({ message: "Cross-company access denied" });
+  }
+  next();
+};
