@@ -135,3 +135,120 @@ export const getDealById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const assignMemberToDeal = async (req, res) => {
+  try {
+    const { id: dealId } = req.params;
+    const { userId, roleInDeal } = req.body;
+    const deal = await Deal.findOne({
+      _id: dealId,
+      companyId: req.user.companyId,
+    });
+    if (!deal) {
+      return res
+        .status(404)
+        .json({ message: "Deal not found in your workspace." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    if (user.companyId !== req.user.companyId) {
+      return res.status(403).json({
+        message:
+          "Security violation: Cannot assign a user from another company.",
+      });
+    }
+    if (!user.isActive) {
+      return res.status(400).json({
+        message: "Cannot assign a deactivated user account to a deal.",
+      });
+    }
+
+    const existingAssignment = await DealMember.findOne({ dealId, userId });
+    if (existingAssignment) {
+      return res
+        .status(409)
+        .json({ message: "User is already assigned to this deal workspace." });
+    }
+    const newAssignment = await DealMember.create({
+      dealId,
+      userId,
+      roleInDeal: user.role,
+    });
+    await newAssignment.populate("userId", "name email role inviteStatus");
+
+    res.status(201).json({
+      message: "Team member assigned successfully",
+      member: newAssignment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const removeMemberFromDeal = async (req, res) => {
+  try {
+    const { id: dealId, userId } = req.params;
+    const deal = await Deal.findOne({
+      _id: dealId,
+      companyId: req.user.companyId,
+    });
+    if (!deal) {
+      return res
+        .status(404)
+        .json({ message: "Deal not found in your workspace." });
+    }
+    const deletedMember = await DealMember.findOneAndDelete({ dealId, userId });
+
+    if (!deletedMember) {
+      return res
+        .status(404)
+        .json({ message: "User was not assigned to this deal." });
+    }
+
+    res.status(200).json({
+      message: "Team member removed from deal successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getDealMembers = async (req, res) => {
+  try {
+    const { id: dealId } = req.params;
+    const deal = await Deal.findOne({
+      _id: dealId,
+      companyId: req.user.companyId,
+    });
+
+    if (!deal) {
+      return res
+        .status(404)
+        .json({ message: "Deal not found in your workspace." });
+    }
+
+    if (req.user.role !== "ADMIN" && req.user.role !== "EXECUTIVE") {
+      const isAssigned = await DealMember.findOne({
+        dealId,
+        userId: req.user._id,
+      });
+
+      if (!isAssigned) {
+        return res.status(403).json({
+          message:
+            "Access denied. You are not assigned to this deal workspace.",
+        });
+      }
+    }
+    const members = await DealMember.find({ dealId })
+      .populate("userId", "name email role inviteStatus isActive")
+      .sort({ assignedAt: -1 });
+
+    res.status(200).json(members);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
