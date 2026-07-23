@@ -7,67 +7,14 @@ An M&A (Mergers & Acquisitions) Deal Flow management platform built with Express
 - Secure cross-company workspace isolation
 - Comprehensive Deal Flow tracking with dynamic team member assignments
 
-High-Level Architecture
-                                    ┌──────────────────────┐
-                                    │    React Frontend    │
-                                    │  (Tailwind + Axios)  │
-                                    └──────────┬───────────┘
-                                               │
-                                      HTTPS Requests
-                                               │
-                                    ┌──────────▼──────────┐
-                                    │       Nginx         │
-                                    │ Reverse Proxy/API   │
-                                    │      Gateway        │
-                                    └──────────┬──────────┘
-                                               │
-        ┌──────────────────────────────────────┼──────────────────────────────────────┐
-        │                                      │                                      │
-        ▼                                      ▼                                      ▼
-┌────────────────┐                   ┌────────────────┐                    ┌────────────────┐
-│ Auth Service   │                   │ Deal Service   │                    │ Task Service   │
-└────────────────┘                   └────────────────┘                    └────────────────┘
-        │                                      │                                      │
-        └──────────────────────────────┬───────┴──────────────────────────────────────┘
-                                       │
-                                       ▼
-                              ┌──────────────────┐
-                              │ Risk Service     │
-                              └──────────────────┘
-                                       │
-                                       ▼
-                              ┌──────────────────┐
-                              │ Document Service │
-                              └──────────────────┘
-                                       │
-                    ┌──────────────────┴──────────────────┐
-                    ▼                                     ▼
-           ┌────────────────┐                   ┌────────────────┐
-           │ AWS S3 Bucket  │                   │ MongoDB Atlas  │
-           │ Stores Files   │                   │ Stores Metadata│
-           └────────────────┘                   └────────────────┘
-                                       │
-                                       ▼
-                              ┌──────────────────┐
-                              │ Redis Cache      │
-                              │ Sessions, Cache, │
-                              │ Notifications    │
-                              └──────────────────┘
-                                       │
-                                       ▼
-                              ┌──────────────────┐
-                              │ Notification     │
-                              │ Service          │
-                              └──────────────────┘
-                                       │
-                                       ▼
-                              ┌──────────────────┐
-                              │ Audit Log        │
-                              │ Service          │
-                              └──────────────────┘
-                                       │
-                                       ▼
-                              ┌──────────────────┐
-                              │ AI Assistant     │
-                              │ Service          │
-                              └──────────────────┘
+Enterprise Multi-Tenant Architecture
+
+Built with a company-based workspace model where every organization has isolated data, role-based access control (RBAC), and secure JWT authentication to ensure complete tenant separation.
+
+End-to-End Due Diligence Workflow
+
+Models the complete M&A due diligence process—from deal creation and member assignment to task management, document collaboration, risk tracking, and executive oversight.
+
+Scalable Document Management
+
+Implements AWS S3 for secure document storage while maintaining metadata in MongoDB, enabling efficient uploads, previews, downloads, and future support for versioning and audit trails.
