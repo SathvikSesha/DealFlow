@@ -7,10 +7,67 @@ An M&A (Mergers & Acquisitions) Deal Flow management platform built with Express
 - Secure cross-company workspace isolation
 - Comprehensive Deal Flow tracking with dynamic team member assignments
 
-## Structure
-- `config/` - Configuration including Database connector
-- `controllers/` - Express handlers containing application flow logic
-- `middleware/` - Custom security protection, role validations, and company restrict filters
-- `models/` - Mongoose schemas (User, Company, Deal, DealMember, Document, Risk, Task)
-- `routes/` - API endpoints mount points
-- `services/` - JWT authentication services
+High-Level Architecture
+                                    ┌──────────────────────┐
+                                    │    React Frontend    │
+                                    │  (Tailwind + Axios)  │
+                                    └──────────┬───────────┘
+                                               │
+                                      HTTPS Requests
+                                               │
+                                    ┌──────────▼──────────┐
+                                    │       Nginx         │
+                                    │ Reverse Proxy/API   │
+                                    │      Gateway        │
+                                    └──────────┬──────────┘
+                                               │
+        ┌──────────────────────────────────────┼──────────────────────────────────────┐
+        │                                      │                                      │
+        ▼                                      ▼                                      ▼
+┌────────────────┐                   ┌────────────────┐                    ┌────────────────┐
+│ Auth Service   │                   │ Deal Service   │                    │ Task Service   │
+└────────────────┘                   └────────────────┘                    └────────────────┘
+        │                                      │                                      │
+        └──────────────────────────────┬───────┴──────────────────────────────────────┘
+                                       │
+                                       ▼
+                              ┌──────────────────┐
+                              │ Risk Service     │
+                              └──────────────────┘
+                                       │
+                                       ▼
+                              ┌──────────────────┐
+                              │ Document Service │
+                              └──────────────────┘
+                                       │
+                    ┌──────────────────┴──────────────────┐
+                    ▼                                     ▼
+           ┌────────────────┐                   ┌────────────────┐
+           │ AWS S3 Bucket  │                   │ MongoDB Atlas  │
+           │ Stores Files   │                   │ Stores Metadata│
+           └────────────────┘                   └────────────────┘
+                                       │
+                                       ▼
+                              ┌──────────────────┐
+                              │ Redis Cache      │
+                              │ Sessions, Cache, │
+                              │ Notifications    │
+                              └──────────────────┘
+                                       │
+                                       ▼
+                              ┌──────────────────┐
+                              │ Notification     │
+                              │ Service          │
+                              └──────────────────┘
+                                       │
+                                       ▼
+                              ┌──────────────────┐
+                              │ Audit Log        │
+                              │ Service          │
+                              └──────────────────┘
+                                       │
+                                       ▼
+                              ┌──────────────────┐
+                              │ AI Assistant     │
+                              │ Service          │
+                              └──────────────────┘
